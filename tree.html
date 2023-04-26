@@ -1,265 +1,397 @@
-<!DOCTYPE html>
-
 <html>
-
-<head>
+  <head>
     <meta charset="UTF-8">
     <title>OrgChart</title>
     <link rel="shortcut icon" type="image/x-icon" href="misc/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
+  </head>
 
-<body>
-
-    <!----------------   ORG CHART NON ESSENTIAL CONTENT ------------>
-    <script src="https://unpkg.com/html2canvas@1.1.4/dist/html2canvas.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/simptip@1.0.4/simptip.min.css" rel="stylesheet">
-
-
-
-    <style>
-        [data-tooltip]:focus:after {
-            display: none;
-            border-bottom-color: none !important;
-            ;
-        }
-
-        [data-tooltip]:focus:before {
-            display: none;
-            border-bottom-color: none !important;
-            ;
-        }
-
-        [data-tooltip]:after {
-            height: auto !important;
-            padding: 11px 11px 11px 11px !important;
-            content: attr(data-tooltip);
-            white-space: pre;
-            line-height: 16px !important;
-            text-align: left !important;
-        }
-    </style>
-
-    <div class="action-buttons" style="margin:0 100px">
-
-
-        <button onclick='chart.setExpanded("O-6164").render()' class="simptip-position-bottom"
-            data-tooltip='chart.setExpanded("O-6164") &#xa; .render()'>Expand O-6164</button>
-        <button onclick='chart.setExpanded("O-6164",false).render()' class="simptip-position-bottom"
-            data-tooltip='chart.setExpanded("O-6164",false) &#xa; .render()'>Collapse O-6164</button>
-        <button onclick='chart.addNode({id:"root child",parentId:"O-6066"})' class="simptip-position-bottom"
-            data-tooltip='chart.addNode({id:"root child",parentId:"O-6066"})'>Add node as roots' child</button>
-        <button onclick='chart.addNode({id:"5-th level node",parentId:"O-6164",_centered:true})'
-            class="simptip-position-bottom"
-            data-tooltip='chart.addNode({id:"5-th level node",parentId:"O-6164",_centered:true})'>Insert node at 5-th
-            level</button>
-        <button onclick='chart.removeNode("O-6067")' class="simptip-position-bottom"
-            data-tooltip='chart.removeNode("O-6067")'>Remove O-6067</button>
-        <button onclick='chart.fit()' class="simptip-position-bottom" data-tooltip='chart.fit()'>Fit
-        </button>
-        <button onclick='chart.layout(["right","bottom","left","top"][index++%4]).render().fit()'
-            class="simptip-position-bottom"
-            data-tooltip='chart.layout(["right","bottom","left","top"][index++%4]) &#xa; .render() &#xa; .fit()'>Swap
-            Layouts
-        </button>
-
-        <button onclick='chart.setCentered("O-6162").render()' class="simptip-position-bottom"
-            data-tooltip='chart.setCentered("O-6162") &#xa; .render()'>Center O-6162 </button>
-        <button onclick='chart.setHighlighted("O-6162").render()' class="simptip-position-bottom"
-            data-tooltip='chart.setHighlighted("O-6162") &#xa; .render()'>Highlight O-6162 </button>
-        <button onclick='chart.setUpToTheRootHighlighted("O-6162").render()' class="simptip-position-bottom"
-            data-tooltip='chart.setUpToTheRootHighlighted("O-6162") &#xa; .render()'>Highlight O-6162 to root </button>
-        <button onclick='chart.clearHighlighting()' class="simptip-position-bottom"
-            data-tooltip='chart.clearHighlighting() &#xa; .render()'>Clear highlighting </button>
-        <button onclick='chart.fullscreen()' class="simptip-position-bottom" data-tooltip='chart.fullscreen()'>Full
-            Screen </button>
-        <button onclick='chart.zoomIn()' class="simptip-position-bottom" data-tooltip='chart.zoomIn()'>Zoom In </button>
-        <button onclick='chart.zoomOut()' class="simptip-position-bottom" data-tooltip='chart.zoomOut()'>Zoom Out
-        </button>
-        <button onclick='chart.exportImg()' class="simptip-position-bottom" data-tooltip='chart.exportImg()'>Export
-            Current Image
-        </button>
-        <button onclick='chart.exportImg({full:true})' class="simptip-position-bottom"
-            data-tooltip='chart.exportImg({full:true})'>Export
-            Export Full Image
-        </button>
-        <button onclick='chart.exportSvg()' class="simptip-position-bottom" data-tooltip='chart.exportSvg()'>Export
-            SVG
-        </button>
-        <button onclick='chart.expandAll()' class="simptip-position-bottom" data-tooltip='chart.expandAll()'>Expand All
-        </button>
-        <button onclick='chart.collapseAll()' class="simptip-position-bottom"
-            data-tooltip='chart.collapseAll()'>Collapse All
-        </button>
-        <button onclick='chart.connections([{from:"O-6067",to:"O-6070",label:"Conflicts of interest"}]).render()'
-            class="simptip-position-bottom" data-tooltip='chart.connections({from:"",to:""}) &#xa; .render()'>Multi Node
-            Connections
-        </button>
-
-        <button onclick='downloadPdf()' class="simptip-position-bottom" data-tooltip='downloadPdf()'>Download PDF
-        </button>
-
-        <script>
-            function downloadPdf() {
-                chart.exportImg({
-                    save: false,
-                    onLoad: (base64 => {
-                        var pdf = new jspdf.jsPDF();
-                        var img = new Image()
-                        img.src = base64;
-                        img.onload = function () {
-                            pdf.addImage(img, 'JPEG', 5, 5, 595 / 3, img.height / img.width * 595 / 3);
-                            pdf.save('chart.pdf');
-                        }
-
-                    })
-                })
-
-            }
-        </script>
-    </div>
-
-    <a href="https://github.com/bumbeishvili/d3-organization-chart">
-        <img style="position:fixed;top:0;right:0;border:0;z-index:2;" width="149" height="149"
-            src="https://bumbeishvili.github.io/d3-tooltip/forkme.png" alt="Fork me on GitHub">
-    </a>
-
-    <!----------------  ORG CHART ESSENTIAL CONTENT ---------------->
+  <body>
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="./build/d3-org-chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3-flextree@2.0.0/build/d3-flextree.js"></script>
-    <div class="chart-container" style=" padding-top:10px;  height:1200px ;background-color:white"> </div>
+    <script src="./orgChart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-flextree@2.1.2/build/d3-flextree.js"></script>
 
-    <script>
-        var index = 0;
-        var chart;
-        d3.csv('misc/data.csv')
-            .then(dataFlattened => {
-                chart = new d3.OrgChart()
-                    .container('.chart-container')
-                    .data(dataFlattened)
-                    .scaleExtent([1,1])
-                    // .svgHeight(window.innerHeight)
-                    // .nodeWidth((d3Node) => {
-                    //     return 200;
-                    //     let i = 0;
-                    //     if (d3Node.parent) { i = d3Node.parent.children.indexOf(d3Node); }
-                    //     if (i && i == d3Node.parent.children.length - 1) { return 600; }
-                    //     return (!i || i == d3Node.parent.children.length - 1) ? 300 : 100
-                    // })
-                    // .nodeHeight((d3Node) => {
-                    //     return 100;
-                    //     let i = 0;
-                    //     if (d3Node.parent) { i = d3Node.parent.children.indexOf(d3Node); }
-                    //     if (i && i == d3Node.parent.children.length - 1) { return 300; }
-                    //     return (!i || i == d3Node.parent.children.length - 1) ? 200 : 100
-                    // })
-                    // .siblingsMargin(d3Node => 0)
-                    // .childrenMargin(d3Node => 50)
-                    // .neightbourMargin((n1, n2) => 50)
-                    // .compactMarginPair(d3Node => 70)
-                    // .compactMarginBetween(d3Node => 30)
-                    // .setActiveNodeCentered(true)
-                    // .layout(new URLSearchParams(new URL(document.location.href).search).get('layout') || "top")
-                    // .onNodeClick(d => console.log(d + ' node clicked'))
-                    // .linkUpdate(function (d3Node, i, arr) {
-                    //     const link = this;
-                    //     d3.select(link)
-                    //         .attr('stroke-dasharray', !i ? '2 2' : 'none')
-                    //         .attr('stroke-width', 3)
-                    // })
-                    // .nodeUpdate(function (data, i, arr) {
-                    //     d3.select(this).on('click.node', (event, d, i) => {
-                    //         console.log(d.nodeId + ' node clicked')
-                    //     })
-                    // })
-                    // .connections(
-                    //     [
-                    //         { id: 1, from: "O-6067", to: "O-6068", label: "Directly Reports To" },
-                    //         { id: 2, from: "O-6070", to: "O-6066", label: "Reports To" },
-                    //         { id: 3, from: "O-6088", to: "O-6069", label: "They were coworkers once" },
-                    //         { id: 3, from: "O-6164", to: "O-6070", label: "Possible conflicts of interest" }
-                    //     ],
-                    // )
-                    //                     .nodeContent(function (d, i, arr, state) {
-
-                    //                         return `
-                    //                            <div style="padding:0px">
-                    // <!--
-                    //                             ${state.layout == 'top' && state.compact && d.flexCompactDim && (d.flexCompactDim[0] || d.flexCompactDim[0] == 1) ? ` <div style="border:1px solid black;opacity:0.5;margin-left:${-(d.flexCompactDim[0] / 2 - d.width) / 2 + state.compactMarginPair(d) / 4}px;width:${d.flexCompactDim[0]}px;height:${d.flexCompactDim[1]}px;z-index:-1;position:absolute;background-color:red"></div>` : ''}
-                    //                             ${state.layout == 'bottom' && state.compact && d.flexCompactDim && (d.flexCompactDim[0] || d.flexCompactDim[0] == 1) ? ` <div style="border:1px solid black;opacity:0.5;margin-top:${-d.flexCompactDim[1] + d.height}px;margin-left:${-(d.flexCompactDim[0] / 2 - d.width) / 2 + state.compactMarginPair(d) / 4}px;width:${d.flexCompactDim[0]}px;height:${d.flexCompactDim[1]}px;z-index:-1;position:absolute;background-color:red"></div>` : ''}
-                    //                             ${state.layout == 'left' && state.compact && d.flexCompactDim && (d.flexCompactDim[0] || d.flexCompactDim[0] == 1) ? ` <div style="border:1px solid black;opacity:0.5;margin-top:${-(d.flexCompactDim[0]/2-d.height)/2+ state.compactMarginPair(d) / 4}px;margin-left:${0}px;width:${d.flexCompactDim[1]}px;height:${d.flexCompactDim[0]}px;z-index:-1;position:absolute;background-color:red"></div>` : ''}
-                    //                             ${state.layout == 'right' && state.compact && d.flexCompactDim && (d.flexCompactDim[0] || d.flexCompactDim[0] == 1) ? ` <div style="border:1px solid black;opacity:0.5; margin-top:${-(d.flexCompactDim[0]/2-d.height)/2+ state.compactMarginPair(d) / 4}px;margin-left:${d.width-d.flexCompactDim[1]}px;width:${d.flexCompactDim[1]}px;height:${d.flexCompactDim[0]}px;z-index:-1;position:absolute;background-color:red"></div>` : ''}
-                    //                         -->
-                    //                              <img src="${d.data.imageUrl}"  style="border-radius:100px;width:60px;height:60px;" />
-                    //                              ID: ${d.data.id} <br>
-                    //                              Children Direct:${d.data._directSubordinates}<br>
-                    //                              Children Total:${d.data._totalSubordinates}
-                    //                             </div>
-                    //                         `;
-                    //                     })
-
-                    .nodeHeight(d => 85)
-                    .nodeWidth(d => {
-                        return 220
-                    })
-                    .childrenMargin(d => 50)
-                    .onNodeClick(d => alert('ok'))
-                    .compactMarginBetween(d => 35)
-                    .compactMarginPair(d => 30)
-                    .neightbourMargin((a, b) => 20)
-                    .buttonContent(({ node, state }) => {
-                        return `<div style="color:#716E7B;border-radius:5px;padding:3px;font-size:10px;margin:auto auto;background-color:white;border: 1px solid #E4E2E9"> <span style="font-size:9px">${node.children ? `<i class="fas fa-angle-up"></i>` : `<i class="fas fa-angle-down"></i>`}</span> ${node.data._directSubordinates}  </div>`
-                    })
-                    .linkUpdate(function (d, i, arr) {
-                        d3.select(this)
-                            .attr("stroke", d => d.data._upToTheRootHighlighted ? '#152785' : '#E4E2E9')
-                            .attr("stroke-width", d => d.data._upToTheRootHighlighted ? 5 : 1)
-
-                        if (d.data._upToTheRootHighlighted) {
-                            d3.select(this).raise()
-                        }
-                    })
-
-
-
-
-
-                    .nodeContent(function (d, i, arr, state) {
-                        const color = "#FFFFFF"
-                        console.log({data:d})
-                        return `
-                         <div style="font-family: 'Inter', sans-serif;background-color:${color}; position:absolute;margin-top:-1px; margin-left:-1px;width:${d.width}px;height:${d.height}px;border-radius:10px;border: 1px solid #E4E2E9">
-                            <div style="background-color:${color};position:absolute;margin-top:-25px;margin-left:${15}px;border-radius:100px;width:50px;height:50px;" ></div>
-                            <img src=" ${d.data.imageUrl}" style="position:absolute;margin-top:-20px;margin-left:${20}px;border-radius:100px;width:40px;height:40px;" />
-                            
-                           <div style="color:#08011E;position:absolute;right:20px;top:17px;font-size:10px;"><i class="fas fa-ellipsis-h"></i></div>
-   
-                           <div style="font-size:15px;color:#08011E;margin-left:20px;margin-top:32px">  ${d.data.name} </div>
-                           <div style="color:#716E7B;margin-left:20px;margin-top:3px;font-size:10px;"> ${d.data.positionName} </div>
-   
+    <!-- <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script type="module" src="index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-org-chart@2.6.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-flextree@2.0.0/build/d3-flextree.js"></script> -->
     
-                        </div>
-                        `;
-                    })
+    <div
+      class="chart-container"
+      style="height: 1200px; background-color: #fffeff"
+    ></div>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+      rel="stylesheet"
+    />
+      
+    <script>
+      var chart;
+      d3.csv(
+        'orgchart.csv'
+      ).then((dataFlattened) => {
+        chart = new d3.OrgChart(d3)
+          .container('.chart-container')
+          .svgHeight(window.innerHeight - 10)
+          .data(dataFlattened)
+          .nodeHeight((d) => 170)
+          .svgWidth(window.innerWidth)
+          .childrenMargin((d) => 90)
+          .compactMarginBetween((d) => 65)
+          .compactMarginPair((d) => 100)
+          .neightbourMargin((a, b) => 50)
+          .siblingsMargin((d) => 100)
+          .buttonContent(({ node, state }) => {
+                        return `<div style="color:#716E7B;border-radius:5px;padding:3px;font-size:10px;margin:auto auto;background-color:white;border: 1px solid #E4E2E9"> <span style="font-size:9px">${node.children ? `<i class="fas fa-angle-up"></i>` : `<i class="fas fa-angle-down"></i>`}</span> ${node.data._directSubordinates}  </div>`
+          })
+          .linkUpdate(function (d, i, arr) {
+            d3.select(this)
+              .attr('stroke', (d) =>
+                d.data._upToTheRootHighlighted ? '#14760D' : '#000000'
+              )
+              .attr('stroke-width', (d) =>
+                d.data._upToTheRootHighlighted ? 15 : 1
+              );
 
+            if (d.data._upToTheRootHighlighted) {
+              d3.select(this).raise();
+            }
+          })
+          .nodeContent(function (d, i, arr, state) {
+            const svgStr = `<svg width=150 height=75  style="background-color:none"> <path d="M 0,15 L15,0 L135,0 L150,15 L150,60 L135,75 L15,75 L0,60" fill="none" stroke="none"/> </svg>`;
+            let backgroundColor = '#FFFFFF'; // default background color
+            console.log(d.data.tags);
+            if (d.data.tags == 'GeneralManager') {
+              backgroundColor = '#FF0000'; // set background color to red for tag A
+            } else if (d.data.tags == 'Manager') {
+              backgroundColor = '#00FF00'; // set background color to green for tag B
+            } else if (d.data.tags == 'Chief') {
+              backgroundColor = '#0000FF'; // set background color to blue for tag C
+            } else if (d.data.tags == 'Engineer') {
+              backgroundColor = '#000000'; // set background color to blue for tag C
+            }
 
+              return `
+                <div class="left-top" style="position:absolute;left:-10px;top:-10px">  ${svgStr}</div>
+                <div class="right-top" style="position:absolute;right:-10px;top:-10px">  ${svgStr}</div>
+                <div class="right-bottom" style="position:absolute;right:-10px;bottom:-14px">  ${svgStr}</div>
+                <div class="left-bottom" style="position:absolute;left:-10px;bottom:-14px">  ${svgStr}</div>
+                <div style="font-family: 'Inter'; background-color:#FFFFFF;sans-serif; position:absolute;margin-top:-1px; margin-left:-1px;width:${d.width}px;height:${d.height}px;border-radius:10px;border: 2px solid ${backgroundColor}">
+                  <div style="color:#000000;position:absolute;left:15px;top:-20px;">
+                    
+                    <div style="font-size:20px;color:#000000;margin-top:32px">
+                      <input type="text" value="${d.data.name}" style="font-size:20px;border:none;background-color:transparent;" onblur="chart.updateNodeName('${d.data.id}', this.value)">
+                    </div>
+                    <div style="font-size:20px;">${d.data.positionName || ''}</div>
+                    <div style="font-size:20px;">${d.data.id || ''}</div>
+                  </div>
+                  <img src="${d.data.imageUrl || ''}" style="max-width:100%;max-height:130px;margin-top:18px;margin-left:150px;"></div>
+                </div>`;
+                          
+          })
+          .onDrop(function (dropData) {
+            console.log(dropData);
+          })
+          .onNodeClick(function(d){
+            parentId = d;
+            console.log('Node Click:', d);
+          })
+          .render()
+        chart.expandAll();
+          
 
-
-
-
-                    .render()
-            })
+          const url = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAB4CAYAAAA5ZDbSAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4QMaAyMA1SdmlAAAAVRJREFUeNrt26FOw2AUhuFTElzrETNLMNPtJVRVVFbtlnYXKGQFqldANo3EoLDUITazzCxBTNBk53lv4M+XJ/ndKZ52L9uft9eP+Oeqbtgs8O7+cbWO36/PiIgmwd4ojsdIU9n2l7XzNBYZNj9Eos6oTRbcdMAZAwxYgAVYgAVYgAUYsAALsAALsAALMGABFmABFmABFmABBizAAqwFgZ/fv+slHl7q3aobNpn2proujIgo276ep/HgixZgARZgARZgAQYswAIswAIswAIswIAFWIAFWIAFWIABC7AAC7AAC7D+AHZdeN97XRf6ogVYgAVYgAVYgAELsAALsAALsAADFmABFmABFmABFmDAAizAAizAAqxrYNeF973XdaEvWoAFWIAFWIAFGLAAC7AAC7AACzBgARZgARZgARZgAQYswAIswAKsW0p1m1S2/WXtPI1Fhs0nxU1Jj2yxm2sAAAAASUVORK5CYII=`;
+        const replaced = url.replace(/(\r\n|\n|\r)/gm);
+        d3.select('.svg-chart-container')
+          .style(
+            'background',
+            'radial-gradient(circle at center, none, none 100%) url("https://raw.githubusercontent.com/bumbeishvili/coronavirus.davidb.dev/master/glow.png")'
+          )
+          .style(
+            'background-image',
+            `url(${replaced}), radial-gradient(circle at center, none, none 100%)`
+          );
+      });
     </script>
+  </body>
+  <script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
+  
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter&display=swap"
+  rel="stylesheet"
+/>
+<link
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+  rel="stylesheet"
+/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+<style>
+  body {
+    background-color: #ffffff;
+  }
+</style>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-    <style>
+<script>
+  var index = 0;
+  var parent = 0;
+  var compact = 0;
+  var actNdCent = 0;
+</script>
 
-    </style>
+<style>
+  .btn {
+    margin: 5px;
+    color: inherit;
+    text-transform: uppercase;
+    word-wrap: break-word;
+    white-space: normal;
+    cursor: pointer;
+    border: 0;
+    border-radius: 0.125rem;
+    -webkit-box-shadow: 0 2px 5px 0 rgb(0 0 0 / 16%),
+      0 2px 10px 0 rgb(0 0 0 / 12%);
+    box-shadow: 0 2px 5px 0 rgb(0 0 0 / 16%), 0 2px 10px 0 rgb(0 0 0 / 12%);
+    -webkit-transition: color 0.0s ease-in-out,
+      background-color 0.0s ease-in-out, border-color 0.0s ease-in-out,
+      -webkit-box-shadow 0.0s ease-in-out;
+    transition: color 0.0s ease-in-out, background-color 0.0s ease-in-out,
+      border-color 0.0s ease-in-out, -webkit-box-shadow 0.0s ease-in-out;
+    transition: color 0.0s ease-in-out, background-color 0.0s ease-in-out,
+      border-color 0.15s ease-in-out, box-shadow 0.0s ease-in-out;
+    transition: color 0.15s ease-in-out, background-color 0.0s ease-in-out,
+      border-color 0.15s ease-in-out, box-shadow 0.0s ease-in-out,
+      -webkit-box-shadow 0.15s ease-in-out;
+    padding: 0.84rem 2.14rem;
+    font-size: 0.81rem;
+    display: inline-block;
+    font-weight: 400;
+    color: #212529;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+  }
+
+  .btn-action-button {
+    text-transform: lowercase;
+    font-size: 11px !important;
+    border-radius: 7px !important;
+    color: white !important;
+    padding: 4px 5px !important;
+    background-color: #1d2643 !important;
+  }
+
+  .action-buttons {
+    position: absolute;
+    bottom: 10px;
+    right: 35px;
+  }
+
+  .svg-chart-container:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, #000000 0, #000000 100%);
+  }
+</style>
+
+
+<div class="action-buttons">
+  
+  <br />
+
+  <button
+    onclick='chart.setExpanded("O-6164",false).render()'
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="fas fa-chevron-up"></i> Collapse</button
+  ><br />
+
+  <button
+    onclick='addEmptyNode()' 
+    class="btn btn-action-button waves-effect waves-light"
+    >
+    <i class="fas fa-folder-plus"></i> Add Node
+  </button>
+
+  <script>
+    function addEmptyNode() {
+    var depth = chart.calculateDepth(parentId);
+    const newNodeId = "new-node-" + Date.now();
+    var newNode = {
+      id: newNodeId,
+      parentId: parentId,
+      _centered: true,
+      name: "Enis",
+      imageUrl: "",
+      tags: "Engineer",
+    };
+    console.log('Node Click:', depth);
+    chart.addNode(newNode);
+    // chart.selectNode(newNodeId);
+    }
+  </script>
+
+  
+  <br />
+
+  <button
+    onclick='chart.removeNode(parentId).render()'
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="fas fa-user-times"></i> remove</button
+  ><br />
+
+  <button
+    onclick="chart.fit()"
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="fas fa-sync"></i> fit
+  </button>
+  <br />
+
+  <button
+    onclick='chart.layout(["right","bottom","left","top"][index++%4]).render().fit()'
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="fas fa-retweet"></i> swap
+  </button>
+  <br />
+
+  <button
+    onclick='chart.onDrop()' 
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="fas fa-retweet"></i> drag
+  </button>
+  <br />
+
+  <button
+    onclick="chart.compact(!!(compact++%2)).render().fit()"
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="fas fa-sitemap"></i> compact
+  </button>
+  <br />
+
+  <button
+    onclick="chart.setActiveNodeCentered(!!(actNdCent++%2)).render()"
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="fas fa-border-none"></i> center Active
+  </button>
+  <br />
+
+  <button
+    onclick='chart.setCentered(parentId).render()' 
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="fas fa-compress-arrows-alt"></i> center
+  </button>
+  <br />
+
+  <script>
+    function setCentered(nodeId) {
+        const attrs = this.getChartState();
+        // this.setExpanded(nodeId)
+        const node = attrs.allNodes.filter(d => attrs.nodeId(d.data) === nodeId)[0];
+        if (!node) {
+            console.log(`ORG CHART - CENTER - Node with id (${nodeId}) not found in the tree`)
+            return this;
+        }
+        node.data._centered = true;
+        node.data._expanded = true;
+        return this;
+    }
+  </script>
+
+
+  <button
+    onclick="chart.clearHighlighting(); chart.setHighlighted(parentId).render()" src="./test2.js"
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="fas fa-highlighter"></i> mark</button
+  ><br />
+  <button
+    onclick='chart.setUpToTheRootHighlighted(parentId).render().fit()' src ="./test2.js"
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="fas fa-route"></i> mark root
+  </button>
+  <br />
+  <button
+    onclick="chart.clearHighlighting()"
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="fas fa-eraser"></i> clear mark
+  </button>
+  
+
+  <button
+    onclick="chart.exportImg()" src="./test2.js"
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="far fa-images"></i> export img
+  </button>
+  <br />
+
+  <button
+    onclick="chart.exportImg({full:true})" src="./test2.js"
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="far fa-images"></i> export full img
+  </button>
+ 
+  <button
+    onclick="chart.expandAll()"
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="fas fa-angle-double-down"></i> expand all</button
+  ><br />
+
+  <button
+    onclick="chart.collapseAll()"
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="fas fa-angle-double-up"></i> collapse all</button
+  ><br />
+
+  <button
+    onclick="downloadPdf()"
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="far fa-file-pdf"></i> export pdf
+  </button>
+  <br />
+
+
+  <button
+    onclick="chart.zoomOut()"
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="fas fa-minus"></i> zoom out</button
+  ><br />
+  <button
+    onclick="chart.zoomIn()"
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="fas fa-plus"></i> zoom in
+  </button>
+  <br />
+</div>
 
 </body>
+</html>
