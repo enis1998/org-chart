@@ -81,13 +81,24 @@
                   <div style="color:#000000;position:absolute;left:15px;top:-20px;">
                     
                     <div style="font-size:20px;color:#000000;margin-top:32px">
+                      
                       <input type="text" value="${d.data.name}" style="font-size:20px;border:none;background-color:transparent;" onblur="chart.updateNodeName('${d.data.id}', this.value)">
                     </div>
                     <div style="font-size:20px;">${d.data.positionName || ''}</div>
                     <div style="font-size:20px;">${d.data.id || ''}</div>
+                    ${
+                        d.depth == 0
+                          ? `                              <br/>
+                      <div style="max-width:400px;font-size:20px;">
+                        BOARD of DIRECTORS
+                      </div>`
+                          : ''
+                      }
                   </div>
                   <img src="${d.data.imageUrl || ''}" style="max-width:100%;max-height:130px;margin-top:18px;margin-left:150px;"></div>
-                </div>`;
+                 </div>
+                 
+                 `;
                           
           })
           .onDrop(function (dropData) {
@@ -231,13 +242,14 @@
     function addEmptyNode() {
     var depth = chart.calculateDepth(parentId);
     const newNodeId = "new-node-" + Date.now();
+    var tag = chart.positiontag(depth);
     var newNode = {
       id: newNodeId,
       parentId: parentId,
       _centered: true,
       name: "Enis",
       imageUrl: "",
-      tags: "Engineer",
+      tags: tag,
     };
     console.log('Node Click:', depth);
     chart.addNode(newNode);
@@ -326,7 +338,7 @@
     <i class="fas fa-highlighter"></i> mark</button
   ><br />
   <button
-    onclick='chart.setUpToTheRootHighlighted(parentId).render().fit()' src ="./test2.js"
+    onclick='chart.setUpToTheRootHighlighted(parentId).render().fit()'
     class="btn btn-action-button waves-effect waves-light"
   >
     <i class="fas fa-route"></i> mark root
