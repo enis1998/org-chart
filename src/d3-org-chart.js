@@ -32,7 +32,7 @@
                         .call(g => g.transition().attr("transform", d => `translate(${d.x},${d.y})`))
                     )};
                     </defs>
-                    `}, connectionsUpdate: function (t, e, a) { M.select(this).attr("stroke", t => "#152785").attr("stroke-linecap", "round").attr("stroke-width", t => "5").attr("pointer-events", "none").attr("marker-start", t => `url(#${t.from + "_" + t.to})`).attr("marker-end", t => `url(#arrow-${t.from + "_" + t.to})`) }, linkUpdate: function (t, e, a) { M.select(this).attr("stroke", t => t.data._upToTheRootHighlighted ? "#152785" : "lightgray").attr("stroke-width", t => t.data._upToTheRootHighlighted ? 5 : 2), t.data._upToTheRootHighlighted && M.select(this).raise() }, nodeUpdate: function (t, e, a) { M.select(this).select(".node-rect").attr("stroke", t => t.data._highlighted || t.data._upToTheRootHighlighted ? "#152785" : "none").attr("stroke-width", t.data._highlighted || t.data._upToTheRootHighlighted ? 10 : 1) }, svg: null, dragHandler: null, refresh: this, descendants: null, nodeWidth: t => 250, nodeHeight: t => 150, siblingsMargin: t => 20, childrenMargin: t => 60, neightbourMargin: (t, e) => 80, compactMarginPair: t => 100, compactMarginBetween: t => 20, onNodeClick: t => t, onDrop: (dropData) => dropData, linkGroupArc: M.linkHorizontal().x(t => t.x).y(t => t.y), nodeContent: t => `<div style="padding:5px;font-size:10px;">Sample Node(id=${t.id}), override using <br/> <br/> 
+                    `}, connectionsUpdate: function (t, e, a) { M.select(this).attr("stroke", t => "#152785").attr("stroke-linecap", "round").attr("stroke-width", t => "5").attr("pointer-events", "none").attr("marker-start", t => `url(#${t.from + "_" + t.to})`).attr("marker-end", t => `url(#arrow-${t.from + "_" + t.to})`) }, linkUpdate: function (t, e, a) { M.select(this).attr("stroke", t => t.data._upToTheRootHighlighted ? "#152785" : "lightgray").attr("stroke-width", t => t.data._upToTheRootHighlighted ? 5 : 2), t.data._upToTheRootHighlighted && M.select(this).raise() }, nodeUpdate: function (t, e, a) { M.select(this).select(".node-rect").attr("stroke", t => t.data._highlighted || t.data._upToTheRootHighlighted ? "#152785" : "none").attr("stroke-width", t.data._highlighted || t.data._upToTheRootHighlighted ? 10 : 1) }, svg: null, dragHandler: null, refresh: this, descendants: null, nodeWidth: t => generalManagerWidth, nodeHeight: t => generalManagerHeight, nodeWidth: t => managerWidth, nodeHeight: t => managerHeight, nodeWidth: t => managerWidth, chiefWidth: t => chiefHeight, nodeWidth: t => managerWidth, engineerWidth: t => engineerHeight, nodeWidth: t => generalManagerWidth, nodeHeight: t => generalManagerHeight, nodeWidth: t => orgNodeWidth, nodeHeight: t => orgNodeHeight, siblingsMargin: t => 20, childrenMargin: t => 60, neightbourMargin: (t, e) => 80, compactMarginPair: t => 100, compactMarginBetween: t => 20, onNodeClick: t => t, onDrop: (dropData) => dropData, linkGroupArc: M.linkHorizontal().x(t => t.x).y(t => t.y), nodeContent: t => `<div style="padding:5px;font-size:10px;">Sample Node(id=${t.id}), override using <br/> <br/> 
             <code>chart<br/>
             &nbsp;.nodeContent({data}=>{ <br/>
              &nbsp;&nbsp;&nbsp;&nbsp;return '' // Custom HTML <br/>
@@ -141,6 +141,48 @@
       M.sourceNode = null;
       M.targetNode = null;
     }  
+    enlargeNode(nodeId) {
+      const attrs = this.getChartState();
+      const node = attrs.allNodes.filter(({ data }) => attrs.nodeId(data) == nodeId)[0];
+      if (node.data.tags == "GeneralManager") {
+        generalManagerHeight += 10;
+        generalManagerWidth += 10;
+      }
+      else if (node.data.tags == "Manager") {
+        managerHeight += 10;
+        managerWidth += 10;
+      }
+      else if (node.data.tags == "Chief") {
+        chiefHeight += 10;
+        chiefWidth += 10;
+      }
+      else {
+        engineerHeight += 10;
+        engineerWidth += 10;
+      }
+      this.updateNodesState();
+    }
+    minimizeNode(nodeId) {
+      const attrs = this.getChartState();
+      const node = attrs.allNodes.filter(({ data }) => attrs.nodeId(data) == nodeId)[0];
+      if (node.data.tags == "GeneralManager") {
+        generalManagerHeight -= 10;
+        generalManagerWidth -= 10;
+      }
+      else if (node.data.tags == "Manager") {
+        managerHeight -= 10;
+        managerWidth -= 10;
+      }
+      else if (node.data.tags == "Chief") {
+        chiefHeight -= 10;
+        chiefWidth -= 10;
+      }
+      else {
+        engineerHeight -= 10;
+        engineerWidth -= 10;
+      }
+      this.updateNodesState();
+    }
     
     addNode(obj) {
       const attrs = this.getChartState();
