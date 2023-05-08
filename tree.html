@@ -28,6 +28,18 @@
       
     <script>
       var chart;
+      var orgNodeHeight = 170;
+      var orgNodeWidth = 250;
+      var generalManagerHeight = 170;
+      var generalManagerWidth = 250;
+      var managerHeight = 170;
+      var managerWidth = 250;
+      var chiefHeight = 170;
+      var chiefWidth = 250;
+      var engineerHeight = 170;
+      var engineerWidth = 250;
+      var enlarge = 0;
+      var minimize = 0;
       d3.csv(
         'orgchart.csv'
       ).then((dataFlattened) => {
@@ -35,7 +47,34 @@
           .container('.chart-container')
           .svgHeight(window.innerHeight - 10)
           .data(dataFlattened)
-          .nodeHeight((d) => 170)
+          .nodeHeight((d) => {
+            if (d.data.tags === 'GeneralManager') {
+              return  generalManagerHeight// set larger height for Manager nodes
+            } 
+            else if(d.data.tags === 'Manager') {
+              return managerHeight;
+            }
+            else if(d.data.tags === 'Chief') {
+              return chiefHeight;
+            }
+            else {
+              return engineerHeight;
+            }
+          })
+          .nodeWidth((d) => {
+            if (d.data.tags === 'GeneralManager') {
+              return  generalManagerWidth// set larger width for Manager nodes
+            } 
+            else if(d.data.tags === 'Manager') {
+              return managerWidth;
+            }
+            else if(d.data.tags === 'Chief') {
+              return chiefWidth;
+            }
+            else {
+              return engineerWidth;
+            }
+          })
           .svgWidth(window.innerWidth)
           .childrenMargin((d) => 90)
           .compactMarginBetween((d) => 65)
@@ -59,7 +98,7 @@
             }
           })
           .nodeContent(function (d, i, arr, state) {
-            const svgStr = `<svg width=150 height=75  style="background-color:none"> <path d="M 0,15 L15,0 L135,0 L150,15 L150,60 L135,75 L15,75 L0,60" fill="none" stroke="none"/> </svg>`;
+            const svgStr = `<svg width=100% height=100%  style="background-color:none"> <path d="M 0,15 L15,0 L135,0 L150,15 L150,60 L135,75 L15,75 L0,60" fill="none" stroke="none"/> </svg>`;
             let backgroundColor = '#FFFFFF'; // default background color
             console.log(d.data.tags);
             if (d.data.tags == 'GeneralManager') {
@@ -73,30 +112,33 @@
             }
 
               return `
-                <div class="left-top" style="position:absolute;left:-10px;top:-10px">  ${svgStr}</div>
-                <div class="right-top" style="position:absolute;right:-10px;top:-10px">  ${svgStr}</div>
-                <div class="right-bottom" style="position:absolute;right:-10px;bottom:-14px">  ${svgStr}</div>
-                <div class="left-bottom" style="position:absolute;left:-10px;bottom:-14px">  ${svgStr}</div>
-                <div style="font-family: 'Inter'; background-color:#FFFFFF;sans-serif; position:absolute;margin-top:-1px; margin-left:-1px;width:${d.width}px;height:${d.height}px;border-radius:10px;border: 2px solid ${backgroundColor}">
-                  <div style="color:#000000;position:absolute;left:15px;top:-20px;">
+                <div class="left-top" style="position:absolute;left:-10%;top:-10%">  ${svgStr}</div>
+                <div class="right-top" style="position:absolute;right:-10%;top:-10%">  ${svgStr}</div>
+                <div class="right-bottom" style="position:absolute;right:-10%;bottom:-10%">  ${svgStr}</div>
+                <div class="left-bottom" style="position:absolute;left:-10%;bottom:-10%">  ${svgStr}</div>
+                <div style="font-family: 'Inter'; background-color:#FFFFFF;sans-serif; position:absolute;margin-top:-1%; margin-left:-1%;width:${d.width}px;height:${d.height}px;border-radius:6%;border: 2px solid ${backgroundColor}">
+                  <div style="max-width:100%;max-height:80%;margin-top:8%;color:#000000;position:absolute;left:3%;max-width:100%;max-height:80%;bottom:40%;">
                     
-                    <div style="font-size:20px;color:#000000;margin-top:32px">
-                      
-                      <input type="text" value="${d.data.name}" style="font-size:20px;border:none;background-color:transparent;" onblur="chart.updateNodeName('${d.data.id}', this.value)">
+                    <div style="max-width:100%;max-height:80%;margin-top:8%;color:#000000;margin-bottom:10%">
+                      <input type="text" value="${d.depth != 0 ? d.data.name : ""}" style="font-size:100%;border:none;background-color:transparent;" onblur="chart.updateNodeName('${d.data.id}', this.value)">
                     </div>
-                    <div style="font-size:20px;">${d.data.tags || ''}</div>
-                    <input type="text" value="${d.data.sectionId}" style="font-size:20px;border:none;background-color:transparent;" onblur="chart.updateNodeSectionId('${d.data.id}', this.value)">
+                    <div style="max-width:100%;max-height:80%;margin-top:8%;color:#000000;margin-bottom:10%">
+                      <div style="font-size:100%;">${d.depth != 0 ? d.data.tags : ""}</div>                      
+                    </div>
+                    <div style="max-width:100%;max-height:80%;margin-top:8%;color:#000000;margin-bottom:10%">
+                      <input type="text" value="${d.depth != 0 ? d.data.sectionId : ""}" style="font-size:100%;border:none;background-color:transparent;" onblur="chart.updateNodeSectionId('${d.data.id}', this.value)">
+                    </div>
 
                     ${
                         d.depth == 0
                           ? `                              <br/>
-                      <div style="max-width:400px;font-size:20px;">
-                        BOARD of DIRECTORS
+                      <div style="font-size:170%;color:#000000;margin-top:-20%;">
+                        <input type="text" value="${d.data.name}" style="font-size:100%;border:none;background-color:transparent;" onblur="chart.updateNodeName('${d.data.id}', this.value)">
                       </div>`
                           : ''
                       }
                   </div>
-                  <img src="${d.data.imageUrl || ''}" style="max-width:100%;max-height:130px;margin-top:18px;margin-left:150px;"></div>
+                  <img src="${d.data.imageUrl || ''}" style="max-width:100%;max-height:80%;margin-top:8%;margin-left:55%;"></div>
                  </div>
                  
                  `;
@@ -145,6 +187,7 @@
     background-color: #ffffff;
   }
 </style>
+
 
 <script>
   var index = 0;
@@ -226,13 +269,6 @@
   <br />
 
   <button
-    onclick='chart.setExpanded("O-6164",false).render()'
-    class="btn btn-action-button waves-effect waves-light"
-  >
-    <i class="fas fa-chevron-up"></i> Collapse</button
-  ><br />
-
-  <button
     onclick='addEmptyNode()' 
     class="btn btn-action-button waves-effect waves-light"
     >
@@ -281,9 +317,8 @@
       // chart.selectNode(newNodeId);
     }
   </script>
-
   
-  <br />
+  
 
   <button
     onclick='chart.removeNode(parentId).render()'
@@ -291,6 +326,20 @@
   >
     <i class="fas fa-user-times"></i> remove</button
   ><br />
+
+  <button
+    onclick='chart.enlargeNode(parentId)' 
+    class="btn btn-action-button waves-effect waves-light"
+  >
+  <i class="fas fa-folder-plus"></i> Enlarge
+</button>
+
+<button
+  onclick='chart.minimizeNode(parentId)' 
+  class="btn btn-action-button waves-effect waves-light"
+  >
+  <i class="fas fa-folder-plus"></i> minimize
+</button><br />
 
   <button
     onclick="chart.fit()"
@@ -378,7 +427,7 @@
   
 
   <button
-    onclick="chart.exportImg()" src="./test2.js"
+    onclick="chart.exportImg()" 
     class="btn btn-action-button waves-effect waves-light"
   >
     <i class="far fa-images"></i> export img
@@ -386,7 +435,7 @@
   <br />
 
   <button
-    onclick="chart.exportImg({full:true})" src="./test2.js"
+    onclick="chart.exportImg({full:true})" 
     class="btn btn-action-button waves-effect waves-light"
   >
     <i class="far fa-images"></i> export full img
@@ -412,6 +461,26 @@
   >
     <i class="far fa-file-pdf"></i> export pdf
   </button>
+
+  <script>
+    function downloadPdf() {
+        chart.exportImg({
+            save: false,
+            onLoad: (base64 => {
+                var pdf = new jspdf.jsPDF();
+                var img = new Image()
+                img.src = base64;
+                img.onload = function () {
+                    pdf.addImage(img, 'JPEG', 5, 5, 595 / 3, img.height / img.width * 595 / 3);
+                    pdf.save('chart.pdf');
+                }
+
+            })
+        })
+
+    }
+</script>
+
   <br />
 
 
@@ -420,7 +489,7 @@
     class="btn btn-action-button waves-effect waves-light"
   >
     <i class="fas fa-minus"></i> zoom out</button
-  ><br />
+  >
   <button
     onclick="chart.zoomIn()"
     class="btn btn-action-button waves-effect waves-light"
