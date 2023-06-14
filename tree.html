@@ -7,6 +7,8 @@
   </head>
 
   <body>
+   
+    
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="./orgChart.js"></script>
@@ -27,70 +29,94 @@
     />
       
     <script>
+      var textBox1 = "";
+      var textBox2 = "";
       var chart;
-      var orgNodeHeight = 170;
-      var orgNodeWidth = 250;
+      var layoutValue = "top";
+      var managementBoardNodeHeight = 170;
+      var managementBoardNodeWidth = 250;
       var generalManagerHeight = 170;
       var generalManagerWidth = 250;
       var managerHeight = 170;
       var managerWidth = 250;
-      var chiefHeight = 170;
-      var chiefWidth = 250;
-      var engineerHeight = 170;
-      var engineerWidth = 250;
+      var deputyGeneralManagerHeight = 170;
+      var deputyGeneralManagerWidth = 250;
+      var assistantGeneralManagerHeight = 170;
+      var assistantGeneralManagerWidth = 250;
+      var ministerHeight = 170;
+      var ministerWidth = 250;
       var enlarge = 0;
       var minimize = 0;
+      var childrenMarginValue = 90;
+      var compactMarginBetweenValue = 65;
+      var compactMarginPairValue = 100;
+      var neightbourMarginValue = 50;
+      var siblingsMarginValue = 100;
+      var intermittentLineColor = '#FF0000';
+      var intermittentLineDashArray = [2, 3];
+      var fromLink = "";
+      var toLink = "";
       d3.csv(
-        'orgchart.csv'
+        'gmy.csv'
       ).then((dataFlattened) => {
         chart = new d3.OrgChart(d3)
           .container('.chart-container')
-          .svgHeight(window.innerHeight - 10)
+          .svgHeight(window.innerHeight)
           .data(dataFlattened)
           .nodeHeight((d) => {
-            if (d.data.tags === 'GeneralManager') {
+            if (d.data.tags === 'ManagementBoard') {
+              return  managementBoardNodeHeight// set larger height for Manager nodes
+            } else if (d.data.tags === 'GeneralManager') {
               return  generalManagerHeight// set larger height for Manager nodes
-            } 
-            else if(d.data.tags === 'Manager') {
+            } else if(d.data.tags === 'DeputyGeneralManager') {
+              return deputyGeneralManagerHeight;
+            } else if(d.data.tags === 'AssistantGeneralManager') {
+              return assistantGeneralManagerHeight;
+            }else if(d.data.tags === 'Minister') {
+              return ministerHeight;
+            } else {
               return managerHeight;
-            }
-            else if(d.data.tags === 'Chief') {
-              return chiefHeight;
-            }
-            else {
-              return engineerHeight;
             }
           })
           .nodeWidth((d) => {
-            if (d.data.tags === 'GeneralManager') {
+            if (d.data.tags === 'ManagementBoard') {
+              return  managementBoardNodeWidth// set larger width for Manager nodes
+            } else if (d.data.tags === 'GeneralManager') {
               return  generalManagerWidth// set larger width for Manager nodes
-            } 
-            else if(d.data.tags === 'Manager') {
+            } else if(d.data.tags === 'DeputyGeneralManager') {
+              return deputyGeneralManagerWidth;
+            } else if(d.data.tags === 'AssistantGeneralManager') {
+              return assistantGeneralManagerWidth;
+            } else if(d.data.tags === 'Minister') {
+              return ministerWidth;
+            } else {
               return managerWidth;
-            }
-            else if(d.data.tags === 'Chief') {
-              return chiefWidth;
-            }
-            else {
-              return engineerWidth;
             }
           })
           .svgWidth(window.innerWidth)
-          .childrenMargin((d) => 90)
-          .compactMarginBetween((d) => 65)
-          .compactMarginPair((d) => 100)
-          .neightbourMargin((a, b) => 50)
-          .siblingsMargin((d) => 100)
+          .childrenMargin((d) => childrenMarginValue)
+          .compactMarginBetween((d) => compactMarginBetweenValue)
+          .compactMarginPair((d) => compactMarginPairValue)
+          .neightbourMargin((a, b) => neightbourMarginValue)
+          .siblingsMargin((d) => siblingsMarginValue)
+          //.connections([{from:"133",to:"1",label:""}])
           .buttonContent(({ node, state }) => {
-                        return `<div style="color:#716E7B;border-radius:5px;padding:3px;font-size:10px;margin:auto auto;background-color:white;border: 1px solid #E4E2E9"> <span style="font-size:9px">${node.children ? `<i class="fas fa-angle-up"></i>` : `<i class="fas fa-angle-down"></i>`}</span> ${node.data._directSubordinates}  </div>`
+            return `<div style="color:#716E7B;border-radius:5px;padding:3px;font-size:10px;margin:auto auto;background-color:white;border: 1px solid #E4E2E9"> <span style="font-size:9px">${node.children ? `<i class="fas fa-angle-up"></i>` : `<i class="fas fa-angle-down"></i>`}</span> ${node.data._directSubordinates}  </div>`
           })
+          //.layout(layoutValue)
           .linkUpdate(function (d, i, arr) {
             d3.select(this)
-              .attr('stroke', (d) =>
-                d.data._upToTheRootHighlighted ? '#14760D' : '#000000'
+              .attr('stroke', (d) => {
+                  return d.data._upToTheRootHighlighted ? '#14760D' : '#000000'
+                }
               )
-              .attr('stroke-width', (d) =>
-                d.data._upToTheRootHighlighted ? 15 : 1
+              .attr('stroke-dasharray', (d) => {
+                  return d.data.isLoggedUser === "false" ? intermittentLineDashArray  : ""
+                }
+              )
+              .attr('stroke-width', (d) => {
+                  return d.data._upToTheRootHighlighted ? 15 : 1
+                }
               );
 
             if (d.data._upToTheRootHighlighted) {
@@ -100,33 +126,38 @@
           .nodeContent(function (d, i, arr, state) {
             const svgStr = `<svg width=100% height=100%  style="background-color:none"> <path d="M 0,15 L15,0 L135,0 L150,15 L150,60 L135,75 L15,75 L0,60" fill="none" stroke="none"/> </svg>`;
             let backgroundColor = '#FFFFFF'; // default background color
-            console.log(d.data.tags);
-            if (d.data.tags == 'GeneralManager') {
+            if (d.data.tags == 'ManagementBoard') {
+              backgroundColor = '#000000'; // set background color to red for tag A
+            } else if (d.data.tags == 'GeneralManager') {
               backgroundColor = '#FF0000'; // set background color to red for tag A
-            } else if (d.data.tags == 'Manager') {
+            } else if (d.data.tags == 'DeputyGeneralManager') {
               backgroundColor = '#00FF00'; // set background color to green for tag B
-            } else if (d.data.tags == 'Chief') {
+            } else if (d.data.tags == 'AssistantGeneralManager') {
               backgroundColor = '#0000FF'; // set background color to blue for tag C
-            } else if (d.data.tags == 'Engineer') {
-              backgroundColor = '#000000'; // set background color to blue for tag C
+            } else if (d.data.tags == 'Minister') {
+              backgroundColor = '#0000FF'; // set background color to blue for tag C
+            } else if (d.data.tags == 'Manager') {
+              backgroundColor = '#000000'; // set background color to black for tag C
+            } else {
+              backgroundColor = '#000000'; // set background color to black for tag C
             }
 
               return `
-                <div class="left-top" style="position:absolute;left:-10%;top:-10%">  ${svgStr}</div>
-                <div class="right-top" style="position:absolute;right:-10%;top:-10%">  ${svgStr}</div>
-                <div class="right-bottom" style="position:absolute;right:-10%;bottom:-10%">  ${svgStr}</div>
-                <div class="left-bottom" style="position:absolute;left:-10%;bottom:-10%">  ${svgStr}</div>
+                <div class="left-top" style="position:absolute;left:-10%;top:-10%"> </div>
+                <div class="right-top" style="position:absolute;right:-10%;top:-10%">  </div>
+                <div class="right-bottom" style="position:absolute;right:-10%;bottom:-10%">  </div>
+                <div class="left-bottom" style="position:absolute;left:-10%;bottom:-10%"> </div>
                 <div style="font-family: 'Inter'; background-color:#FFFFFF;sans-serif; position:absolute;margin-top:-1%; margin-left:-1%;width:${d.width}px;height:${d.height}px;border-radius:6%;border: 2px solid ${backgroundColor}">
                   <div style="max-width:100%;max-height:80%;margin-top:8%;color:#000000;position:absolute;left:3%;max-width:100%;max-height:80%;bottom:40%;">
                     
-                    <div style="max-width:100%;max-height:80%;margin-top:8%;color:#000000;margin-bottom:10%">
-                      <input type="text" value="${d.depth != 0 ? d.data.name : ""}" style="font-size:100%;border:none;background-color:transparent;" onblur="chart.updateNodeName('${d.data.id}', this.value)">
+                    <div style="max-width:100%;max-height:80%;margin-top:8%;color:#000000;margin-bottom:0%">
+                      <input type="text" value="${d.data.sectionId}" style="font-size:100%;border:none;background-color:transparent;" onblur="chart.updateNodeSectionId('${d.data.id}', this.value)">
                     </div>
-                    <div style="max-width:100%;max-height:80%;margin-top:8%;color:#000000;margin-bottom:10%">
-                      <div style="font-size:100%;">${d.depth != 0 ? d.data.tags : ""}</div>                      
+                    <div style="max-width:100%;max-height:80%;margin-top:8%;color:#000000;margin-bottom:0%">
+                      <textarea style="font-size:100%;border:none;background-color:transparent;" onblur="chart.updateNodePositionName('${d.data.id}', this.value)">${d.depth != 0 ? d.data.positionName : ""}</textarea>                      
                     </div>
-                    <div style="max-width:100%;max-height:80%;margin-top:8%;color:#000000;margin-bottom:10%">
-                      <input type="text" value="${d.depth != 0 ? d.data.sectionId : ""}" style="font-size:100%;border:none;background-color:transparent;" onblur="chart.updateNodeSectionId('${d.data.id}', this.value)">
+                    <div style="max-width:100%;max-height:80%;margin-top:8%;color:#000000;margin-bottom:0%">
+                      <input type="text" value="${d.depth != 0 ? d.data.name : ""}" style="font-size:100%;border:none;background-color:transparent;width:100%;word-break: break-all;" onblur="chart.updateNodeName('${d.data.id}', this.value)">
                     </div>
 
                     ${
@@ -141,8 +172,7 @@
                   <img src="${d.data.imageUrl || ''}" style="max-width:100%;max-height:80%;margin-top:8%;margin-left:55%;"></div>
                  </div>
                  
-                 `;
-                          
+                 `;         
           })
           .onDrop(function (dropData) {
             console.log(dropData);
@@ -169,19 +199,12 @@
       });
     </script>
   </body>
-  <script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
-  
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link
-  href="https://fonts.googleapis.com/css2?family=Inter&display=swap"
-  rel="stylesheet"
-/>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>  
 <link
   href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
   rel="stylesheet"
 />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
 <style>
   body {
     background-color: #ffffff;
@@ -197,6 +220,11 @@
 </script>
 
 <style>
+  .textarea{
+    width:400px;
+    height:150px;
+    border:1px solid rgb(0, 0, 0);
+  }
   .btn {
     margin: 5px;
     color: inherit;
@@ -280,9 +308,12 @@
       const attrs = chart.getChartState();
       const node = attrs.allNodes.filter(d => attrs.nodeId(d.data) === parentId)[0];
 
+      const root = attrs.allNodes.filter(d => attrs.nodeId(d.data) === '1')[0];
       var depth = chart.calculateDepth(parentId);
-      const newNodeId = "new-node-" + Date.now(); 
-      var tag = chart.positiontag(depth);
+      root.data.size = (parseInt(root.data.size) + 1).toString();
+      console.log(root.data.size);
+      const newNodeId = root.data.size; 
+      var tag = chart.positiontag(depth, node.data.tags);
 
       var directSubordinates = node.data._directSubordinates + 1;
       console.log(directSubordinates);
@@ -292,11 +323,15 @@
       if (tag == "GeneralManager") {
         sectionName =  "";
       }
-      else if (tag == "Manager") {
+      else if (tag == "Minister") {
         //const node3 = attrs.allNodes.filter(d => attrs.nodeSectionId(d.data) === node.data._directSubordinates)[0];
         sectionName = "";
       }
-      else if (tag == "Chief") {
+      else if (tag == "AssistantGeneralManager") {
+        //const node3 = attrs.allNodes.filter(d => attrs.nodeSectionId(d.data) === node.data._directSubordinates)[0];
+        sectionName = "";
+      }
+      else if (tag == "DeputyGeneralManager") {
         sectionName = node.data.sectionId.split(RegExp("[0-9]", "g"))[0] + directSubordinates;
       }
       else {
@@ -306,10 +341,12 @@
       var newNode = {
         id: newNodeId,
         parentId: parentId,
-        sectionId: sectionName,
+        sectionId: sectionName == "" ? "new" : sectionName,
+        positionName: sectionName == "" ? "new" : sectionName,
+        office: "top",
         _centered: true,
         name: "New Name",
-        imageUrl: "",
+        imageUrl: "https://raw.githubusercontent.com/bumbeishvili/Assets/master/Projects/D3/Organization%20Chart/general.jpg",
         tags: tag,
       };
       console.log('Node Click:', depth);
@@ -328,18 +365,64 @@
   ><br />
 
   <button
-    onclick='chart.enlargeNode(parentId)' 
+    onclick='chart.enlargeNodeHeight(parentId)' 
     class="btn btn-action-button waves-effect waves-light"
   >
-  <i class="fas fa-folder-plus"></i> Enlarge
+  <i class="fas fa-folder-plus"></i> Enlarge height
 </button>
 
 <button
-  onclick='chart.minimizeNode(parentId)' 
+    onclick='chart.enlargeNodeWidth(parentId)' 
+    class="btn btn-action-button waves-effect waves-light"
+  >
+  <i class="fas fa-folder-plus"></i> Enlarge width
+</button>
+<br>
+<button
+  onclick='chart.minimizeNodeHeight(parentId)' 
   class="btn btn-action-button waves-effect waves-light"
   >
-  <i class="fas fa-folder-plus"></i> minimize
-</button><br />
+  <i class="fas fa-folder-plus"></i> minimize height
+</button>
+
+<button
+  onclick='chart.minimizeNodeWidth(parentId)' 
+  class="btn btn-action-button waves-effect waves-light"
+  >
+  <i class="fas fa-folder-plus"></i> minimize height
+</button>
+<br>
+
+<button
+  onclick='chart.linkFrom(parentId)'
+  class="btn btn-action-button waves-effect waves-light"
+  >
+  <i class="fas fa-project-diagram"></i> from
+</button>
+
+<button
+  onclick='chart.linkTo(parentId)'
+  class="btn btn-action-button waves-effect waves-light"
+  >
+  <i class="fas fa-project-diagram"></i> to
+</button>
+<br />
+
+
+  <button
+    onclick="chart.setMinister(parentId)"
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="fas fa-sync"></i> set Minister
+  </button>
+
+  <button
+    onclick="chart.setAssistantGeneralManager(parentId)"
+    class="btn btn-action-button waves-effect waves-light"
+  >
+    <i class="fas fa-sync"></i> set AGM
+  </button>
+  <br />
 
   <button
     onclick="chart.fit()"
@@ -347,7 +430,7 @@
   >
     <i class="fas fa-sync"></i> fit
   </button>
-  <br />
+
 
   <button
     onclick='chart.layout(["right","bottom","left","top"][index++%4]).render().fit()'
@@ -355,7 +438,7 @@
   >
     <i class="fas fa-retweet"></i> swap
   </button>
-  <br />
+
 
   <button
     onclick='chart.saveAllData()' 
@@ -364,6 +447,76 @@
     <i class="fas fa-retweet"></i> Save
   </button>
   <br />
+
+  <button
+    onclick='chart.enlargeChildrenMargin()' 
+    class="btn btn-action-button waves-effect waves-light"
+  >
+  <i class="fas fa-folder-plus"></i> + Node Margin
+  </button>
+
+  <button
+  onclick='chart.minimizeChildrenMargin()' 
+  class="btn btn-action-button waves-effect waves-light"
+  >
+  <i class="fas fa-folder-plus"></i> - Node Margin
+  </button><br />
+
+  <button
+    onclick='chart.enlargeMarginBetween()' 
+    class="btn btn-action-button waves-effect waves-light"
+  >
+  <i class="fas fa-folder-plus"></i> + compact margin
+  </button><br />
+
+  <button
+  onclick='chart.minimizeMarginBetween()' 
+  class="btn btn-action-button waves-effect waves-light"
+  >
+  <i class="fas fa-folder-plus"></i> - compact margin
+  </button><br />
+
+  <button
+    onclick='chart.enlargeMarginPair()' 
+    class="btn btn-action-button waves-effect waves-light"
+  >
+  <i class="fas fa-folder-plus"></i> + margin pair
+  </button>
+
+  <button
+  onclick='chart.minimizeMarginPair()' 
+  class="btn btn-action-button waves-effect waves-light"
+  >
+  <i class="fas fa-folder-plus"></i> - margin pair
+  </button><br />
+
+  <button
+    onclick='chart.enlargeNeightbourMargin()' 
+    class="btn btn-action-button waves-effect waves-light"
+  >
+  <i class="fas fa-folder-plus"></i> + neightbour Margin
+  </button><br />
+
+  <button
+  onclick='chart.minimizeNeightbourMargin()' 
+  class="btn btn-action-button waves-effect waves-light"
+  >
+  <i class="fas fa-folder-plus"></i> - neightbour Margin
+  </button><br />
+
+  <button
+    onclick='chart.enlargeSiblingsMargin()' 
+    class="btn btn-action-button waves-effect waves-light"
+  >
+  <i class="fas fa-folder-plus"></i> + sibling Margin
+  </button>
+
+  <button
+  onclick='chart.minimizeSiblingsMargin()' 
+  class="btn btn-action-button waves-effect waves-light"
+  >
+  <i class="fas fa-folder-plus"></i> - sibling Margin
+  </button><br />
 
   <button
     onclick="chart.compact(!!(compact++%2)).render().fit()"
@@ -379,7 +532,7 @@
   >
     <i class="fas fa-border-none"></i> center Active
   </button>
-  <br />
+ 
 
   <button
     onclick='chart.setCentered(parentId).render()' 
@@ -406,20 +559,20 @@
 
 
   <button
-    onclick="chart.clearHighlighting(); chart.setHighlighted(parentId).render()" src="./test2.js"
+    onclick="chart.clearHighlighting(); chart.setHighlighted(parentId).render()" src="./orgChart.js"
     class="btn btn-action-button waves-effect waves-light"
   >
     <i class="fas fa-highlighter"></i> mark</button
-  ><br />
+  >
   <button
-    onclick='chart.setUpToTheRootHighlighted(parentId).render().fit()'
+    onclick='chart.setUpToTheRootHighlighted(parentId).render().fit()' src="./orgChart.js"
     class="btn btn-action-button waves-effect waves-light"
   >
     <i class="fas fa-route"></i> mark root
   </button>
   <br />
   <button
-    onclick="chart.clearHighlighting()"
+    onclick="chart.clearHighlighting()" src="./orgChart.js"
     class="btn btn-action-button waves-effect waves-light"
   >
     <i class="fas fa-eraser"></i> clear mark
@@ -427,7 +580,7 @@
   
 
   <button
-    onclick="chart.exportImg()" 
+    onclick="chart.exportImg()" src="./orgChart.js"
     class="btn btn-action-button waves-effect waves-light"
   >
     <i class="far fa-images"></i> export img
@@ -435,21 +588,21 @@
   <br />
 
   <button
-    onclick="chart.exportImg({full:true})" 
+    onclick="chart.exportImg({full:true})" src="./orgChart.js"
     class="btn btn-action-button waves-effect waves-light"
   >
     <i class="far fa-images"></i> export full img
   </button>
  
   <button
-    onclick="chart.expandAll()"
+    onclick="chart.expandAll()" src="./orgChart.js"
     class="btn btn-action-button waves-effect waves-light"
   >
     <i class="fas fa-angle-double-down"></i> expand all</button
   ><br />
 
   <button
-    onclick="chart.collapseAll()"
+    onclick="chart.collapseAll()" src="./orgChart.js"
     class="btn btn-action-button waves-effect waves-light"
   >
     <i class="fas fa-angle-double-up"></i> collapse all</button
